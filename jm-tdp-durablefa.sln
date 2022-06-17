@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32519.379
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jm-tdp-durablefa", "jm-tdp-durablefa\jm-tdp-durablefa.csproj", "{09F0D274-5583-429B-9BA8-31A8BF00385D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09F0D274-5583-429B-9BA8-31A8BF00385D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09F0D274-5583-429B-9BA8-31A8BF00385D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09F0D274-5583-429B-9BA8-31A8BF00385D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09F0D274-5583-429B-9BA8-31A8BF00385D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B9E3480B-A737-4B17-8E87-E74E27123E1F}
+	EndGlobalSection
+EndGlobal
