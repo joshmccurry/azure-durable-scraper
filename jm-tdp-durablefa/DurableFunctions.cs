@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -43,7 +45,7 @@ namespace jm_tdp_durablefa {
 
             string addSite = await context.WaitForExternalEvent<string>("AddSite");
             //await External Event  Checkpoint 4
-            while(addSite != null)
+            while (addSite != null)
                 try {
                     Uri uri = new Uri(addSite);
                     if (!outputs.ContainsKey(addSite)) {
@@ -74,6 +76,24 @@ namespace jm_tdp_durablefa {
             string instance = req.Query["instance"];
             await client.RaiseEventAsync(instance, "AddSite", site);
             return "Sent!";
+        }
+
+        [FunctionName("StatusCheck")]
+        public static async Task<IActionResult> StatusCheck(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
+            [DurableClient] IDurableOrchestrationClient client,
+            ILogger log) {
+            var runtimeStatus = new List<OrchestrationRuntimeStatus>();
+
+            runtimeStatus.Add(OrchestrationRuntimeStatus.Pending);
+            runtimeStatus.Add(OrchestrationRuntimeStatus.Running);
+
+            var result = await client.ListInstancesAsync(new OrchestrationStatusQueryCondition() { RuntimeStatus = runtimeStatus }, CancellationToken.None);
+            return (ActionResult) new OkObjectResult(
+                new {
+                    HasRunning = result.DurableOrchestrationState.Any()
+                }
+            );
         }
     }
 }
