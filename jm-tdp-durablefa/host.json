@@ -1,11 +1,16 @@
 {
-    "version": "2.0",
-    "logging": {
-        "applicationInsights": {
-            "samplingSettings": {
-                "isEnabled": true,
-                "excludedTypes": "Request"
-            }
-        }
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "logLevel": {
+        "Host.Triggers.DurableTask": "Information",
+        "DurableTask.AzureStorage": "Warning",
+        "DurableTask.Core": "Warning"
+      },
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
     }
+  }
 }

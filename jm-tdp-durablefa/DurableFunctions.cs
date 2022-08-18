@@ -35,13 +35,24 @@ namespace jm_tdp_durablefa {
         public static async Task<string> RunOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context) {
             string[] websites = { "https://microsoft.com", "https://google.com", "https://yahoo.com" };
             var outputs = new Dictionary<string, string>();
-
-            foreach (string site in websites)
+            var sites = new List<string>();
+            foreach (string site in websites) {
                 outputs.Add(site, await context.CallActivityAsync<string>("ScrapeWebsite", site));
+                sites.Add(site);
+                context.SetCustomStatus(new {
+                    sites = sites,
+                    isWaitingForExternal = false
+                });
+            }
             //Ping all three sites as a function chain.
             //await Scrape microsoft.com    Checkpoint 1
             //await Scrape google.com       Checkpoint 2
             //await Scrape yahoo.com        Checkpoint 3
+            context.SetCustomStatus(new {
+                sites = sites,
+                isWaitingForExternal = true,
+                externalURL = $"./api/addsite?instance={context.InstanceId}&site=<url>"
+            }) ;
 
             string addSite = await context.WaitForExternalEvent<string>("AddSite");
             //await External Event  Checkpoint 4
@@ -50,6 +61,13 @@ namespace jm_tdp_durablefa {
                     Uri uri = new Uri(addSite);
                     if (!outputs.ContainsKey(addSite)) {
                         outputs.Add(addSite, await context.CallActivityAsync<string>("ScrapeWebsite", uri.ToString()));
+                        sites.Add(addSite);
+                        context.SetCustomStatus(new {
+                            sites = sites,
+                            isWaitingForExternal = true,
+                            externalURL = $"./api/addsite?instance={context.InstanceId}&site=<url>",
+                            note = "Enter a null value for site to end."
+                        });
                     }
                     addSite = await context.WaitForExternalEvent<string>("AddSite");
                 } catch (UriFormatException ufe) {
@@ -92,14 +110,32 @@ namespace jm_tdp_durablefa {
             var hasRunning = result.DurableOrchestrationState.Any();
             if (hasRunning) {
                 return new ObjectResult(result) {
-                    StatusCode = 503
+                    StatusCode = 503,                           //Tell DevOps we're busy
+                    Value = result.DurableOrchestrationState    //List an current instanceids
                 };
             }
-            return (ActionResult) new OkObjectResult(
-                new {
-                    isRunning = hasRunning
-                }
-            );
+            return (ActionResult) new OkObjectResult(result.DurableOrchestrationState);
         }
+
+
+        [FunctionName("KillAll")]
+        public static async Task<IActionResult> KillAll(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
+            [DurableClient] IDurableOrchestrationClient client,
+            ILogger log) {
+            var runtimeStatus = new List<OrchestrationRuntimeStatus>();
+
+            runtimeStatus.Add(OrchestrationRuntimeStatus.Pending);
+            runtimeStatus.Add(OrchestrationRuntimeStatus.Running);
+
+            var result = await client.ListInstancesAsync(new OrchestrationStatusQueryCondition() { RuntimeStatus = runtimeStatus }, CancellationToken.None);
+            foreach (var status in result.DurableOrchestrationState)
+                await client.TerminateAsync(status.InstanceId, "Forced");
+
+            return (ActionResult) new OkObjectResult(new {
+                complete = true
+            });
+        }
+
     }
 }
