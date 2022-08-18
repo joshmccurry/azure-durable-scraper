@@ -84,7 +84,7 @@ stages:
               deployToSlotOrASE: true
               resourceGroupName: 'jm-tdp-durablefuncRG'
               slotName: 'staging'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
               deploymentMethod: 'auto'
           - task: AzureAppServiceManage@0
             inputs:
