@@ -68,9 +68,12 @@ stages:
 
           steps:
           - task: AzureFunctionApp@1
-            displayName: 'Azure functions app deploy'
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              appType: functionApp
-              appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+              azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
+              appType: 'functionApp'
+              appName: 'jm-tdp-durablefunc'
+              deployToSlotOrASE: true
+              resourceGroupName: 'jm-tdp-durablefuncRG'
+              slotName: 'staging'
+              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              deploymentMethod: 'auto'
