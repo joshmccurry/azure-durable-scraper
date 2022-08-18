@@ -14,7 +14,7 @@ variables:
   functionAppName: 'jm-tdp-durablefunc'
 
   # Agent VM image name
-  vmImageName: 'windows-2019'
+  vmImageName: 'windows-2022'
 
   # Working Directory
   workingDirectory: '$(System.DefaultWorkingDirectory)/jm-tdp-durablefa'
