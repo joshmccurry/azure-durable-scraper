@@ -80,7 +80,7 @@ namespace jm_tdp_durablefa {
 
         [FunctionName("StatusCheck")]
         public static async Task<IActionResult> StatusCheck(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
             [DurableClient] IDurableOrchestrationClient client,
             ILogger log) {
             var runtimeStatus = new List<OrchestrationRuntimeStatus>();
