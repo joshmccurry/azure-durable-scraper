@@ -89,9 +89,15 @@ namespace jm_tdp_durablefa {
             runtimeStatus.Add(OrchestrationRuntimeStatus.Running);
 
             var result = await client.ListInstancesAsync(new OrchestrationStatusQueryCondition() { RuntimeStatus = runtimeStatus }, CancellationToken.None);
+            var hasRunning = result.DurableOrchestrationState.Any();
+            if (hasRunning) {
+                return new ObjectResult(result) {
+                    StatusCode = 503
+                };
+            }
             return (ActionResult) new OkObjectResult(
                 new {
-                    HasRunning = result.DurableOrchestrationState.Any()
+                    isRunning = hasRunning
                 }
             );
         }
