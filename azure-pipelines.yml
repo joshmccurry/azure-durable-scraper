@@ -1,0 +1,79 @@
+# .NET Core Function App to Windows on Azure
+# Build a .NET Core function app and deploy it to Azure as a Windows function App.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureSubscription: 'd6100e3d-0fc4-48e8-bc0f-d0ba9cdc938c'
+
+  # Function app name
+  functionAppName: 'jm-tdp-durablefunc'
+
+  # Agent VM image name
+  vmImageName: 'windows-2022'
+
+  # Working Directory
+  workingDirectory: '$(System.DefaultWorkingDirectory)/jm-tdp-durablefa'
+
+stages:
+- stage: Build
+  displayName: Build stage
+
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: 'build'
+        projects: |
+          $(workingDirectory)/*.csproj
+        arguments: --output $(System.DefaultWorkingDirectory)/publish_output --configuration Release
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps:
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
+              appType: 'functionApp'
+              appName: 'jm-tdp-durablefunc'
+              deployToSlotOrASE: true
+              resourceGroupName: 'jm-tdp-durablefuncRG'
+              slotName: 'staging'
+              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              deploymentMethod: 'auto'
