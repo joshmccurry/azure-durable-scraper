@@ -54,11 +54,20 @@ stages:
   displayName: Deploy stage
   dependsOn: Build
   condition: succeeded()
-
   jobs:
+  - job: waitForValidation
+    displayName: Wait for orchestrations to complete
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - task: AzureFunction@1
+      inputs:
+        function: 'https://$(functionAppName).azurewebsites.net/api/StatusCheck'
+        method: GET
   - deployment: Deploy
     displayName: Deploy
     environment: 'development'
+    dependsOn: waitForValidation
     pool:
       vmImage: $(vmImageName)
 
@@ -71,9 +80,16 @@ stages:
             inputs:
               azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
               appType: 'functionApp'
-              appName: 'jm-tdp-durablefunc'
+              appName: $(functionAppName)
               deployToSlotOrASE: true
               resourceGroupName: 'jm-tdp-durablefuncRG'
               slotName: 'staging'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
               deploymentMethod: 'auto'
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
+              Action: 'Swap Slots'
+              WebAppName: 'jm-tdp-durablefunc'
+              ResourceGroupName: 'jm-tdp-durablefuncRG'
+              SourceSlot: 'staging'
