@@ -65,7 +65,7 @@ namespace jm_tdp_durablefa {
 
         [FunctionName("AddSite")]
         public static async Task<string> AddSite(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             [DurableClient] IDurableOrchestrationClient client,
             ILogger log) {
             log.LogInformation("C# HTTP trigger function processed a request.");
