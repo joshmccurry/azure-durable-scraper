@@ -86,3 +86,10 @@ stages:
               slotName: 'staging'
               package: '$(System.DefaultWorkingDirectory)/**/*.zip'
               deploymentMethod: 'auto'
+          - task: AzureAppServiceManage@0
+            inputs:
+              azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
+              Action: 'Swap Slots'
+              WebAppName: 'jm-tdp-durablefunc'
+              ResourceGroupName: 'jm-tdp-durablefuncRG'
+              SourceSlot: 'staging'
