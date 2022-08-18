@@ -67,6 +67,7 @@ stages:
   - deployment: Deploy
     displayName: Deploy
     environment: 'development'
+    dependsOn: waitForValidation
     pool:
       vmImage: $(vmImageName)
 
