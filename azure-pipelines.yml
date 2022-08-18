@@ -67,6 +67,10 @@ stages:
         deploy:
 
           steps:
+          - task: AzureFunction@1
+            inputs:
+              function: https://$().azurewebsites.net/api/StatusCheck
+              method: GET
           - task: AzureFunctionApp@1
             inputs:
               azureSubscription: 'joshmccurry-internal-subscription (906bacd5-83f3-4bab-b6f0-c498a1ff4b6d)'
