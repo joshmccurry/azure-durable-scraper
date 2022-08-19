@@ -12,6 +12,5 @@
         "excludedTypes": "Request"
       }
     }
-  },
-  "APPINSIGHTS_INSTRUMENTATIONKEY": "0a1312c5-4a96-4576-a314-dcaa6c9d84fe"
+  }
 }
